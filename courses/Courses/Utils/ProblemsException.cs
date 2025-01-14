@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Diagnostics;
-
 namespace Courses.Utils;
 
 [Serializable]
@@ -21,12 +20,21 @@ public class ProblemsExceptionHandler(IProblemDetailsService problemDetailsServi
     public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
         if (exception is not ProblemsException problemsException) return true;
-        ProblemsException ex = (ProblemsException)exception;
-        var det = new ProblemDetails
+        var det = new Microsoft.AspNetCore.Mvc.ProblemDetails
         {
-            Status = 400,
-            
-            Errors = problemsException.Errors.Select(x => new ProblemDetails.Error()),
+            Status = StatusCodes.Status400BadRequest,
+            Title = problemsException.Msg,
+            Type = "Bad Request",
+            Extensions = new Dictionary<string, object?>()
+            {
+                {"errors", problemsException.Errors}
+            }
         };
+        httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+        return await problemDetailsService.TryWriteAsync(new ProblemDetailsContext
+        {
+            HttpContext = httpContext,
+            ProblemDetails = det
+        });
     }
 }

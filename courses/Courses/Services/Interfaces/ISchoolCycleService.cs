@@ -6,6 +6,6 @@ namespace Courses.Services.Interfaces;
 
 public interface ISchoolCycleService
 {
-    Task<Result<Cycle>> add(CycleCreateRequest cycle);
-    Task<Result<Cycle>> open();
+    Task<Result<Cycle>> CreateAsync(CycleCreateRequest cycle);
+    Task<Result<Cycle>> OpenAsync();
 }

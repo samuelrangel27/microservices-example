@@ -14,7 +14,7 @@ public class CycleOpenEndpoint : Endpoint<CycleOpenRequest, CycleOpenResponse>
 
     public override async Task HandleAsync(CycleOpenRequest req, CancellationToken ct)
     {
-        var r = await CycleService.open();
+        var r = await CycleService.OpenAsync();
         await SendAsync(new()
         {
         });

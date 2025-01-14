@@ -15,7 +15,7 @@ public class SchoolCycleService : ISchoolCycleService
             this.context = context;
         }
 
-        public async Task<Result<Cycle>> add(CycleCreateRequest cycle)
+        public async Task<Result<Cycle>> CreateAsync(CycleCreateRequest cycle)
         {
             var existingCycle = context.Cycles
                 .FirstOrDefault(x => x.Status == CycleStatus.New);
@@ -49,7 +49,7 @@ public class SchoolCycleService : ISchoolCycleService
             return Result<Cycle>.Ok(MsgConstants.SUCCESS,newCycle);
         }
 
-        public async Task<Result<Cycle>> open()
+        public async Task<Result<Cycle>> OpenAsync()
         {
             var openCycle = context.Cycles.FirstOrDefault(x => x.Status == CycleStatus.Open);
             if(openCycle != null)

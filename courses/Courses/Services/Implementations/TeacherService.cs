@@ -14,7 +14,7 @@ public class TeacherService : ITeacherService
     {
         this.dbContext = dbContext;
     }
-    public async Task<Result<Teacher>> add(TeacherCreateRequest teacher)
+    public async Task<Result<Teacher>> CreateAsync(TeacherCreateRequest teacher)
     {
         var newTeacher = new Teacher{
             RFC = teacher.RFC,

@@ -18,6 +18,7 @@ builder.Services.AddDbContext<CoursesDbContext>(opt =>
 builder.Services.AddScoped<ISchoolCycleService, SchoolCycleService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ITeacherService, TeacherService>();
+builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ProblemsExceptionHandler>();
 var app = builder.Build();
 

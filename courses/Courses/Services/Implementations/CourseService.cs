@@ -9,7 +9,7 @@ namespace Courses.Services.Implementations;
 public class CourseService(CoursesDbContext context, ITeacherService teacherService) : ICourseService
     {
         
-        public async Task<Result<Course>> add(CourseCreateRequest course)
+        public async Task<Result<Course>> CreateAsync(CourseCreateRequest course)
         {
             // get open cycle
             var openCycle = context.Cycles.FirstOrDefault(x => x.Status == CycleStatus.Open);

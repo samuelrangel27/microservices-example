@@ -13,7 +13,7 @@ public class CycleCreateEndpoint : Endpoint<CycleCreateRequest, CycleCreateRespo
 
     public override async Task HandleAsync(CycleCreateRequest req, CancellationToken ct)
     {
-        var r = await CycleService.add(req);
+        var r = await CycleService.CreateAsync(req);
         r.EnsureSuccess();
         await SendAsync(new()
         {

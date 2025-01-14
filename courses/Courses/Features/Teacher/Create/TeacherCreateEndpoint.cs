@@ -13,7 +13,7 @@ public class TeacherCreateEndpoint : Endpoint<TeacherCreateRequest, TeacherCreat
 
     public override async Task HandleAsync(TeacherCreateRequest req, CancellationToken ct)
     {
-        var r = await TeacherService.add(req);
+        var r = await TeacherService.CreateAsync(req);
         await SendAsync(new()
         {
         });

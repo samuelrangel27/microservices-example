@@ -14,7 +14,7 @@ public class CreateCourseEndpoint : Endpoint<CourseCreateRequest, CourseCreateRe
 
     public override async Task HandleAsync(CourseCreateRequest req, CancellationToken ct)
     {
-        var r = await CourseService.add(req);
+        var r = await CourseService.CreateAsync(req);
         await SendAsync(new()
         {
             CourseId = r.Data.Id

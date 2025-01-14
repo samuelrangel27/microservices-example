@@ -6,6 +6,6 @@ namespace Courses.Services.Interfaces;
 
 public interface ICourseService
 {
-    Task<Result<Course>> add(CourseCreateRequest course);
+    Task<Result<Course>> CreateAsync(CourseCreateRequest course);
     
 }

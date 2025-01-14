@@ -6,6 +6,6 @@ namespace Courses.Services.Interfaces;
 
 public interface ITeacherService
 {
-    Task<Result<Teacher>> add(TeacherCreateRequest classInput);
+    Task<Result<Teacher>> CreateAsync(TeacherCreateRequest classInput);
     Result<Teacher> GetbyId(string rfc);
 }
