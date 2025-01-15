@@ -6,16 +6,15 @@ using Courses.Utils;
 
 namespace Courses.Services.Implementations;
 
-public class TeacherService : ITeacherService
+public class TeacherService(CoursesDbContext dbContext, ILogger<TeacherService> logger) : ITeacherService
 {
-    private readonly CoursesDbContext dbContext;
-
-    public TeacherService(CoursesDbContext dbContext)
-    {
-        this.dbContext = dbContext;
-    }
     public async Task<Result<Teacher>> CreateAsync(TeacherCreateRequest teacher)
     {
+        if (dbContext.Teachers.Any(t => t.RFC == teacher.RFC))
+        {
+            logger.LogWarning("Teacher with RFC '{RFC}' already exists", teacher.RFC);
+            return Result<Teacher>.Fail($"Teacher with RFC {teacher.RFC} already exists");
+        } 
         var newTeacher = new Teacher{
             RFC = teacher.RFC,
             Name = teacher.Name,

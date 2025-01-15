@@ -1,8 +1,9 @@
 using Courses.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Courses.Features.Teacher.Create;
 
-public class TeacherCreateEndpoint : Endpoint<TeacherCreateRequest, TeacherCreateResponse>
+public class TeacherCreateEndpoint : Endpoint<TeacherCreateRequest, Results<Ok,ProblemDetails>>
 {
     public ITeacherService TeacherService { get; set; }
     public override void Configure()
@@ -11,11 +12,10 @@ public class TeacherCreateEndpoint : Endpoint<TeacherCreateRequest, TeacherCreat
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(TeacherCreateRequest req, CancellationToken ct)
+    public override async Task<Results<Ok,ProblemDetails>> HandleAsync(TeacherCreateRequest req, CancellationToken ct)
     {
         var r = await TeacherService.CreateAsync(req);
-        await SendAsync(new()
-        {
-        });
+        r.EnsureSuccess();
+        return TypedResults.Ok();
     }
 }

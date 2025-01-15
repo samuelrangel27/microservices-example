@@ -1,21 +1,22 @@
 using Courses.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Courses.Features.Cycle.Create;
 
-public class CycleCreateEndpoint : Endpoint<CycleCreateRequest, CycleCreateResponse>
+public class CycleCreateEndpoint : Endpoint<CycleCreateRequest, Results<Ok<CycleCreateResponse>,ProblemDetails>>
 {
-    public ISchoolCycleService CycleService { get; set; }
+    public ISchoolCycleService CycleService { get; }
     public override void Configure()
     {
         Post("/api/cycle");
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(CycleCreateRequest req, CancellationToken ct)
+    public override async Task<Results<Ok<CycleCreateResponse>,ProblemDetails>> HandleAsync(CycleCreateRequest req, CancellationToken ct)
     {
         var r = await CycleService.CreateAsync(req);
         r.EnsureSuccess();
-        await SendAsync(new()
+        return TypedResults.Ok(new CycleCreateResponse
         {
             CycleId = r.Data.Id
         });

@@ -1,9 +1,10 @@
 using Courses.Features.Cycle.Create;
 using Courses.Services.Interfaces;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Courses.Features.Course.Create;
 
-public class CreateCourseEndpoint : Endpoint<CourseCreateRequest, CourseCreateResponse>
+public class CreateCourseEndpoint : Endpoint<CourseCreateRequest, Results<Ok<CourseCreateResponse>,ProblemDetails>>
 {
     public ICourseService CourseService { get; set; }
     public override void Configure()
@@ -12,10 +13,11 @@ public class CreateCourseEndpoint : Endpoint<CourseCreateRequest, CourseCreateRe
         AllowAnonymous();
     }
 
-    public override async Task HandleAsync(CourseCreateRequest req, CancellationToken ct)
+    public override async Task<Results<Ok<CourseCreateResponse>, ProblemDetails>> HandleAsync(CourseCreateRequest req, CancellationToken ct)
     {
         var r = await CourseService.CreateAsync(req);
-        await SendAsync(new()
+        r.EnsureSuccess();
+        return TypedResults.Ok(new CourseCreateResponse
         {
             CourseId = r.Data.Id
         });
