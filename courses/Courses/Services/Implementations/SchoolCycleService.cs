@@ -1,19 +1,17 @@
-using Courses.DbContexts;
+    using Courses.DbContexts;
 using Courses.Domain.Entitites;
+using Courses.Events;
 using Courses.Features.Cycle.Create;
 using Courses.Services.Interfaces;
 using Courses.Utils;
+using MassTransit;
 
 namespace Courses.Services.Implementations;
 
-public class SchoolCycleService : ISchoolCycleService
+public class SchoolCycleService(CoursesDbContext context, 
+    IPublishEndpoint publishEndpoint,
+    ILogger<SchoolCycleService> logger) : ISchoolCycleService
     {
-        private readonly CoursesDbContext context;
-
-        public SchoolCycleService(CoursesDbContext context)
-        {
-            this.context = context;
-        }
 
         public async Task<Result<Cycle>> CreateAsync(CycleCreateRequest cycle)
         {
@@ -46,7 +44,8 @@ public class SchoolCycleService : ISchoolCycleService
             };
             await context.Cycles.AddAsync(newCycle);
             await context.SaveChangesAsync();
-            return Result<Cycle>.Ok(MsgConstants.SUCCESS,newCycle);
+            await publishEndpoint.Publish(new CycleAdded(newCycle.Id, newCycle.StartDate, newCycle.EndDate));
+            return Result<Cycle>.Ok(MsgConstants.SUCCESS, newCycle);
         }
 
         public async Task<Result<Cycle>> OpenAsync()

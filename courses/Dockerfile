@@ -1,10 +1,15 @@
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /app
 
+EXPOSE 80
+
 # Copy everything
-COPY . .
+COPY *.sln ./
+COPY Courses/*.csproj ./Courses/
 # Restore as distinct layers
 RUN dotnet restore
+
+COPY . .
 # Build and publish a release
 RUN dotnet publish -o out
 
