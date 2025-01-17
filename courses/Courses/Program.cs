@@ -1,10 +1,12 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Courses.DbContexts;
 using Courses.Services.Implementations;
 using Courses.Services.Interfaces;
 using Courses.Utils;
 using IdempotentAPI.Cache.DistributedCache.Extensions.DependencyInjection;
+using IdempotentAPI.Cache.FusionCache.Extensions.DependencyInjection;
 using IdempotentAPI.Extensions.DependencyInjection;
-using IdempotentAPI.MinimalAPI.Extensions.DependencyInjection;
 using MassTransit;
 using MassTransit.MultiBus;
 using Microsoft.EntityFrameworkCore;
@@ -44,12 +46,15 @@ builder.Services.AddIdempotentMinimalAPI(new IdempotencyOptions
     CacheOnlySuccessResponses = true,
     IsIdempotencyOptional = false
 });
-// Register an implementation of the IDistributedCache.
-// For this example, we are using a Memory Cache.
-builder.Services.AddDistributedMemoryCache();
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = builder.Configuration.GetConnectionString("Redis-Cache");
+});
 
-// Register the IdempotentAPI.Cache.DistributedCache.
-builder.Services.AddIdempotentAPIUsingDistributedCache();
+// Configure FusionCache with System.Text.Json, NodaTime serializer and more.
+builder.Services.AddFusionCacheNewtonsoftJsonSerializer();
+
+builder.Services.AddIdempotentAPIUsingFusionCache();
 
 var app = builder.Build();
 
