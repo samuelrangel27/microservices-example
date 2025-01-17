@@ -1,4 +1,5 @@
 using Courses.Services.Interfaces;
+using IdempotentAPI.MinimalAPI;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Courses.Features.Teacher.Create;
@@ -15,6 +16,7 @@ public class TeacherCreateEndpoint : Endpoint<TeacherCreateRequest, Results<Ok, 
     {
         Post("/api/teacher");
         AllowAnonymous();
+        Options(x => x.AddEndpointFilter<IdempotentAPIEndpointFilter>());
     }
 
     public override async Task<Results<Ok, ProblemDetails>> HandleAsync(TeacherCreateRequest req, CancellationToken ct)

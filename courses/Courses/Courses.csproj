@@ -7,6 +7,9 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="IdempotentAPI" Version="2.7.0-issue-85-01" />
+        <PackageReference Include="IdempotentAPI.Cache.DistributedCache" Version="2.2.0" />
+        <PackageReference Include="IdempotentAPI.MinimalAPI" Version="3.3.0-issue-85-01" />
         <PackageReference Include="MassTransit.AspNetCore" Version="7.3.1" />
         <PackageReference Include="MassTransit.RabbitMQ" Version="8.3.4" />
         <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="8.0.6"/>

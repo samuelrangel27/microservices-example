@@ -2,9 +2,13 @@ using Courses.DbContexts;
 using Courses.Services.Implementations;
 using Courses.Services.Interfaces;
 using Courses.Utils;
+using IdempotentAPI.Cache.DistributedCache.Extensions.DependencyInjection;
+using IdempotentAPI.Extensions.DependencyInjection;
+using IdempotentAPI.MinimalAPI.Extensions.DependencyInjection;
 using MassTransit;
 using MassTransit.MultiBus;
 using Microsoft.EntityFrameworkCore;
+using IdempotencyOptions = IdempotentAPI.Core.IdempotencyOptions;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +37,19 @@ builder.Services.AddMassTransit(x =>
 {
     x.UsingRabbitMq();
 });
+builder.Services.AddIdempotentMinimalAPI(new IdempotencyOptions
+{
+    HeaderKeyName = "x-idempotency-key",
+    ExpiresInMilliseconds = TimeSpan.FromHours(1).TotalMilliseconds,
+    CacheOnlySuccessResponses = true,
+    IsIdempotencyOptional = false
+});
+// Register an implementation of the IDistributedCache.
+// For this example, we are using a Memory Cache.
+builder.Services.AddDistributedMemoryCache();
+
+// Register the IdempotentAPI.Cache.DistributedCache.
+builder.Services.AddIdempotentAPIUsingDistributedCache();
 
 var app = builder.Build();
 

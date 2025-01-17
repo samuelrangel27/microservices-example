@@ -1,5 +1,6 @@
 using Courses.Features.Cycle.Create;
 using Courses.Services.Interfaces;
+using IdempotentAPI.MinimalAPI;
 using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Courses.Features.Course.Create;
@@ -11,6 +12,8 @@ public class CreateCourseEndpoint : Endpoint<CourseCreateRequest, Results<Ok<Cou
     {
         Post("/api/course");
         AllowAnonymous();
+        
+        Options(x => x.AddEndpointFilter<IdempotentAPIEndpointFilter>());
     }
 
     public override async Task<Results<Ok<CourseCreateResponse>, ProblemDetails>> HandleAsync(CourseCreateRequest req, CancellationToken ct)
