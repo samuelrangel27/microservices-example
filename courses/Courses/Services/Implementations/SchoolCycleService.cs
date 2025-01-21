@@ -15,13 +15,20 @@ public class SchoolCycleService(CoursesDbContext context,
 
         public async Task<Result<Cycle>> CreateAsync(CycleCreateRequest cycle)
         {
+            logger.LogInformation("Querying for existing cycles with New status");
             var existingCycle = context.Cycles
                 .FirstOrDefault(x => x.Status == CycleStatus.New);
-            if(existingCycle != null)
+            if (existingCycle != null)
+            {
+                logger.LogError("There is already a cycle with status New");
                 return Result<Cycle>.Fail("There is already a cycle with status New");
+            }
 
             if(cycle.EndDate < cycle.StartDate)
+            {
+                logger.LogError("End date must be greater than start date");
                 return Result<Cycle>.Fail("End date must be greater than start date");
+            }
 
             if(cycle.EndDate.Month - cycle.StartDate.Month < 5)
                 return Result<Cycle>.Fail("The duration of the cycle must be at least 5 months");
@@ -31,10 +38,16 @@ public class SchoolCycleService(CoursesDbContext context,
                 .ToArray();
             
             if(sameYearCycles.Length == 2)
+            {
+                logger.LogError("There can only be 2 cycles every year");
                 return Result<Cycle>.Fail("There can only be 2 cycles every year");
+            }
 
             if(sameYearCycles.FirstOrDefault()?.EndDate < cycle.StartDate)
+            {
+                logger.LogError("Start date must be greater than previous cycle's end date");
                 return Result<Cycle>.Fail("Start date must be greater than previous cycle's end date");
+            }
 
             var newCycle = new Cycle()
             {
@@ -50,15 +63,22 @@ public class SchoolCycleService(CoursesDbContext context,
 
         public async Task<Result<Cycle>> OpenAsync()
         {
+            logger.LogInformation("Querying for cycles with Open status");
             var openCycle = context.Cycles.FirstOrDefault(x => x.Status == CycleStatus.Open);
             if(openCycle != null)
+            {
+                logger.LogError("There is already a cycle with status Open");
                 return Result<Cycle>
                     .Fail($"School cycle with start date {openCycle.StartDate.ToString("dd/MM/yyyy")} is still open");
-
+            }
+            logger.LogInformation("Querying for cycles with New status");
             var cycle = context.Cycles
                 .FirstOrDefault(x => x.Status == CycleStatus.New);
             if(cycle == null)
+            {
+                logger.LogError("There is no cycle with status New");
                 return Result<Cycle>.Fail("There is no school cycle with status New");
+            }
             
             cycle.Status = CycleStatus.Open;
             context.Update(cycle);

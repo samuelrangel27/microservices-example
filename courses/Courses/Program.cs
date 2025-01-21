@@ -10,9 +10,13 @@ using IdempotentAPI.Extensions.DependencyInjection;
 using MassTransit;
 using MassTransit.MultiBus;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Resources;
+using OpenTelemetry.Trace;
+using Serilog;
 using IdempotencyOptions = IdempotentAPI.Core.IdempotencyOptions;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 
 // Add services to the container.
 builder.Services.AddFastEndpoints();
@@ -55,6 +59,19 @@ builder.Services.AddStackExchangeRedisCache(options =>
 builder.Services.AddFusionCacheNewtonsoftJsonSerializer();
 
 builder.Services.AddIdempotentAPIUsingFusionCache();
+builder.Services
+    .AddOpenTelemetry()
+    .ConfigureResource(resource => resource.AddService("CoursesService"))
+    .WithTracing(tracing =>
+    {
+        tracing
+            .AddAspNetCoreInstrumentation()
+            .AddHttpClientInstrumentation()
+            .AddRedisInstrumentation()
+            .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName);
+
+        tracing.AddOtlpExporter();
+    });
 
 var app = builder.Build();
 
