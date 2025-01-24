@@ -1,0 +1,73 @@
+services:
+  courses-api:
+    build: ./Courses
+    environment:
+      - ASPNETCORE_ENVIRONMENT=QA
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - 8080:80
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+        restart: true
+      msg_broker:
+        condition: service_started
+      redis_cache:
+        condition: service_started
+  career-plans-api:
+    build: ./CareerPlans
+    environment:
+      - ASPNETCORE_ENVIRONMENT=QA
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - 8082:80
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+        restart: true
+      msg_broker:
+        condition: service_started
+      redis_cache:
+        condition: service_started
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:latest
+    environment:
+      SA_PASSWORD: "Test123$"
+      ACCEPT_EULA: "Y"
+    ports:
+      - 1433:1433
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+  msg_broker:
+    image: rabbitmq:latest
+    environment:
+      - RABBITMQ_DEFAULT_USER=rabbit
+      - RABBITMQ_DEFAULT_PASS=travel@1
+    ports:
+      - "4369:4369"
+      - "5671:5671"
+      - "5672:5672"
+      - "25672:25672"
+      - "15671:15671"
+      - "15672:15672"
+  redis_cache:
+    image: redis
+    container_name: Redis-Cache
+    ports:
+      - "6379:6379"
+  seq:
+    image: datalust/seq:2024.3
+    container_name: seq
+    restart: always
+    environment:
+      - ACCEPT_EULA=Y
+    volumes:
+      - ./docker_data/seq:/data
+    ports:
+      - "5341:5341"
+      - "8081:80"
+    
