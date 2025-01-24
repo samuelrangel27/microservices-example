@@ -16,7 +16,7 @@ public class CreateCourseEndpoint : Endpoint<CourseCreateRequest, Results<Ok<Cou
         Options(x => x.AddEndpointFilter<IdempotentAPIEndpointFilter>());
     }
 
-    public override async Task<Results<Ok<CourseCreateResponse>, ProblemDetails>> HandleAsync(CourseCreateRequest req, CancellationToken ct)
+    public override async Task<Results<Ok<CourseCreateResponse>, ProblemDetails>> ExecuteAsync(CourseCreateRequest req, CancellationToken ct)
     {
         var r = await CourseService.CreateAsync(req);
         r.EnsureSuccess();

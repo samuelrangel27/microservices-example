@@ -20,7 +20,7 @@ public class CycleOpenEndpoint : EndpointWithoutRequest<Results<NoContent, Probl
         Options(x => x.AddEndpointFilter<IdempotentAPIEndpointFilter>());
     }
 
-    public override async Task<Results<NoContent, ProblemDetails>> HandleAsync(CancellationToken ct)
+    public override async Task<Results<NoContent, ProblemDetails>> ExecuteAsync(CancellationToken ct)
     {
         var r = await CycleService.OpenAsync();
         r.EnsureSuccess();
