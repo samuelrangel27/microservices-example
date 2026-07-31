@@ -1,6 +1,6 @@
 services:
   courses-api:
-    build: ./Courses
+    build: ./courses
     environment:
       - ASPNETCORE_ENVIRONMENT=QA
       - ASPNETCORE_URLS=http://+:80
