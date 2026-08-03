@@ -10,17 +10,18 @@ using IdempotentAPI.Extensions.DependencyInjection;
 using MassTransit;
 using MassTransit.MultiBus;
 using Microsoft.EntityFrameworkCore;
+using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 using Serilog;
 using IdempotencyOptions = IdempotentAPI.Core.IdempotencyOptions;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Host.UseSerilog((context, loggerConfig) => loggerConfig.ReadFrom.Configuration(context.Configuration));
 
 // Add services to the container.
 builder.Services.AddFastEndpoints();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddDbContext<CoursesDbContext>(opt =>
@@ -32,17 +33,7 @@ builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddScoped<ITeacherService, TeacherService>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ProblemsExceptionHandler>();
-builder.Services.AddOptions<RabbitMqTransportOptions>()
-    .Configure(options =>
-    {
-        options.Host = builder.Configuration["RabbitMq:Host"];
-        options.User = builder.Configuration["RabbitMq:User"];
-        options.Pass = builder.Configuration["RabbitMq:Password"];
-    });;
-builder.Services.AddMassTransit(x =>
-{
-    x.UsingRabbitMq();
-});
+
 builder.Services.AddIdempotentMinimalAPI(new IdempotencyOptions
 {
     HeaderKeyName = "x-idempotency-key",
@@ -55,23 +46,36 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.Configuration = builder.Configuration.GetConnectionString("Redis-Cache");
 });
 
-// Configure FusionCache with System.Text.Json, NodaTime serializer and more.
 builder.Services.AddFusionCacheNewtonsoftJsonSerializer();
-
 builder.Services.AddIdempotentAPIUsingFusionCache();
-builder.Services
-    .AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("CoursesService"))
-    .WithTracing(tracing =>
-    {
-        tracing
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation()
-            .AddRedisInstrumentation()
-            .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName);
 
-        tracing.AddOtlpExporter();
-    });
+// Register OpenTelemetry only when NOT in Development environment
+if (!builder.Environment.IsDevelopment())
+{
+    var otlpEndpoint = builder.Configuration["OpenTelemetry:OtlpEndpoint"] ?? "http://tempo:4317";
+
+    builder.Services.AddOpenTelemetry()
+        .WithTracing(tracing =>
+        {
+            tracing
+                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Courses.Api"))
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddOtlpExporter(options =>
+                {
+                    options.Endpoint = new Uri(otlpEndpoint);
+                });
+        })
+        .WithMetrics(metrics =>
+        {
+            metrics
+                .SetResourceBuilder(ResourceBuilder.CreateDefault().AddService("Courses.Api"))
+                .AddAspNetCoreInstrumentation()
+                .AddHttpClientInstrumentation()
+                .AddRuntimeInstrumentation()
+                .AddPrometheusExporter();
+        });
+}
 
 var app = builder.Build();
 
@@ -81,11 +85,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+else
+{
+    app.MapPrometheusScrapingEndpoint();
+}
 
 using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
 {
     var context = serviceScope.ServiceProvider.GetRequiredService<CoursesDbContext>();
-    if(context.Database.GetPendingMigrations().Any())
+    if (context.Database.GetPendingMigrations().Any())
         context.Database.Migrate();
 }
 app.UseHttpsRedirection();

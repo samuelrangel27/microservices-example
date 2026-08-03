@@ -6,6 +6,8 @@ EXPOSE 80
 # Copy everything
 COPY *.sln ./
 COPY src/Courses.Api/*.csproj ./src/Courses.Api/
+COPY tests/Courses.Api.UnitTests/*.csproj ./tests/Courses.Api.UnitTests/
+
 # Restore as distinct layers
 RUN dotnet restore
 

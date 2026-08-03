@@ -27,17 +27,6 @@ builder.Services.AddScoped<ICareerService, CareerService>();
 builder.Services.AddScoped<ICareerPlanService, CareerPlanService>();
 builder.Services.AddProblemDetails();
 builder.Services.AddExceptionHandler<ProblemsExceptionHandler>();
-builder.Services.AddOptions<RabbitMqTransportOptions>()
-    .Configure(options =>
-    {
-        options.Host = builder.Configuration["RabbitMq:Host"];
-        options.User = builder.Configuration["RabbitMq:User"];
-        options.Pass = builder.Configuration["RabbitMq:Password"];
-    });;
-builder.Services.AddMassTransit(x =>
-{
-    x.UsingRabbitMq();
-});
 
 builder.Services.AddIdempotentMinimalAPI(new IdempotentAPI.Core.IdempotencyOptions
 {
@@ -55,20 +44,6 @@ builder.Services.AddStackExchangeRedisCache(options =>
 builder.Services.AddFusionCacheNewtonsoftJsonSerializer();
 
 builder.Services.AddIdempotentAPIUsingFusionCache();
-builder.Services
-    .AddOpenTelemetry()
-    .ConfigureResource(resource => resource.AddService("CareerPlanService"))
-    .WithTracing(tracing =>
-    {
-        tracing
-            .AddAspNetCoreInstrumentation()
-            .AddHttpClientInstrumentation()
-            .AddRedisInstrumentation()
-            .AddSource(MassTransit.Logging.DiagnosticHeaders.DefaultListenerName);
-
-        tracing.AddOtlpExporter();
-    });
-
 
 var app = builder.Build();
 
@@ -81,7 +56,7 @@ if (app.Environment.IsDevelopment())
 using (var serviceScope = app.Services.GetService<IServiceScopeFactory>().CreateScope())
 {
     var context = serviceScope.ServiceProvider.GetRequiredService<CareerPlanDbContext>();
-    if(context.Database.GetPendingMigrations().Any())
+    if (context.Database.GetPendingMigrations().Any())
         context.Database.Migrate();
 }
 app.UseHttpsRedirection();
