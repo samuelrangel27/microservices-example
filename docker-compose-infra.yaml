@@ -1,0 +1,55 @@
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:latest
+    environment:
+      SA_PASSWORD: ${SQL_SA_PWD}
+      ACCEPT_EULA: "Y"
+    ports:
+      - 1433:1433
+    healthcheck:
+      test: /opt/mssql-tools18/bin/sqlcmd -C -S localhost -U sa -P "$$SA_PASSWORD" -Q "SELECT 1" || exit 1
+      interval: 10s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+  redis_cache:
+    image: redis
+    container_name: Redis-Cache
+    ports:
+      - "6379:6379"
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAPHANA_PWD}
+    depends_on:
+      - prometheus
+      - loki
+      - tempo
+
+  prometheus:
+    image: prom/prometheus:latest
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus.yaml:/etc/prometheus/prometheus.yml
+
+  loki:
+    image: grafana/loki:latest
+    ports:
+      - "3100:3100"
+    command: -config.file=/etc/loki/config/loki.yaml
+    volumes:
+      - ./loki.yaml:/etc/loki/config/loki.yaml
+      - ./docker_data/loki:/tmp/loki
+
+  tempo:
+    image: grafana/tempo:latest
+    ports:
+      - "3200:3200"
+    command: -config.file=/etc/tempo/config/tempo.yaml
+    volumes:
+      - ./tempo.yaml:/etc/tempo/config/tempo.yaml
+      - ./docker_data/tempo:/tmp/tempo
+    

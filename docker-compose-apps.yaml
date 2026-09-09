@@ -1,0 +1,8 @@
+services:
+  courses-api:
+    image: ghcr.io/samuelrangel27/mse-courses-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=QA
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - 5782:80
