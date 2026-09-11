@@ -56,7 +56,7 @@ services:
         
 configs:
   prometheus_config:
-    content:
+    content: |
       global:
         scrape_interval: 15s
         scrape_configs:
@@ -76,7 +76,7 @@ configs:
             static_configs:
               - targets: ['courses-api:80']
   loki_config:
-    content:
+    content: |
       auth_enabled: false
 
       server:
@@ -116,7 +116,7 @@ configs:
         reject_old_samples: true
         reject_old_samples_max_age: 168h
   tempo_config:
-    content:
+    content: |
       stream_over_http_enabled: true
 
       server:
