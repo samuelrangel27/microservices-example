@@ -53,12 +53,12 @@ services:
     configs:
       - source: tempo_config
         target: /etc/tempo/config/tempo.yaml
-        
+
   configs:
-  prometheus_config:
-    file: ./prometheus.yaml
-  loki_config:
-    file: ./loki.yaml
-  tempo_config:
-    file: ./tempo.yaml
+    prometheus_config:
+      file: ./prometheus.yaml
+    loki_config:
+      file: ./loki.yaml
+    tempo_config:
+      file: ./tempo.yaml
     
