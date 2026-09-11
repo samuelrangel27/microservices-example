@@ -59,22 +59,22 @@ configs:
     content: |
       global:
         scrape_interval: 15s
-        scrape_configs:
-          - job_name: 'prometheus'
-            static_configs:
-              - targets: ['localhost:9090']
+      scrape_configs:
+        - job_name: 'prometheus'
+          static_configs:
+            - targets: ['localhost:9090']
 
-          - job_name: 'loki'
-            static_configs:
-              - targets: ['loki:3100']
+        - job_name: 'loki'
+          static_configs:
+            - targets: ['loki:3100']
 
-          - job_name: 'tempo'
-            static_configs:
-              - targets: ['tempo:3200']
+        - job_name: 'tempo'
+          static_configs:
+            - targets: ['tempo:3200']
 
-          - job_name: 'courses-api'
-            static_configs:
-              - targets: ['courses-api:80']
+        - job_name: 'courses-api'
+          static_configs:
+            - targets: ['courses-api:80']
   loki_config:
     content: |
       auth_enabled: false
