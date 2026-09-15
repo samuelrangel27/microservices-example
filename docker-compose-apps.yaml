@@ -4,5 +4,13 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=QA
       - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__Redis-Cache=redis_cache:6379
     ports:
       - 5782:80
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    name: homelab
+    external: true

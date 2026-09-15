@@ -12,11 +12,17 @@ services:
       timeout: 3s
       retries: 10
       start_period: 10s
+    networks:
+      - homelab
+
   redis_cache:
     image: redis
     container_name: Redis-Cache
     ports:
       - "6379:6379"
+    networks:
+      - homelab
+
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -27,6 +33,11 @@ services:
       - prometheus
       - loki
       - tempo
+    configs:
+      - source: grafana_datasources
+        target: /etc/grafana/provisioning/datasources/datasources.yaml
+    networks:
+      - homelab
 
   prometheus:
     image: prom/prometheus:latest
@@ -35,6 +46,8 @@ services:
     configs:
       - source: prometheus_config
         target: /etc/prometheus/prometheus.yml
+    networks:
+      - homelab
 
   loki:
     image: grafana/loki:latest
@@ -44,6 +57,8 @@ services:
     configs:
       - source: loki_config
         target: /etc/loki/config/loki.yaml
+    networks:
+      - homelab
 
   tempo:
     image: grafana/tempo:latest
@@ -53,8 +68,52 @@ services:
     configs:
       - source: tempo_config
         target: /etc/tempo/config/tempo.yaml
-        
+    networks:
+      - homelab
+
+networks:
+  homelab:
+    name: homelab
+    driver: bridge
+
 configs:
+  grafana_datasources:
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          uid: prometheus
+          access: proxy
+          url: http://prometheus:9090
+          isDefault: true
+          editable: true
+
+        - name: Loki
+          type: loki
+          uid: loki
+          access: proxy
+          url: http://loki:3100
+          editable: true
+
+        - name: Tempo
+          type: tempo
+          uid: tempo
+          access: proxy
+          url: http://tempo:3200
+          editable: true
+          jsonData:
+            tracesToLogsV2:
+              datasourceUid: loki
+            tracesToMetrics:
+              datasourceUid: prometheus
+            serviceMap:
+              datasourceUid: prometheus
+            nodeGraph:
+              enabled: true
+            lokiSearch:
+              datasourceUid: loki
+
   prometheus_config:
     content: |
       global:
@@ -73,8 +132,10 @@ configs:
             - targets: ['tempo:3200']
 
         - job_name: 'courses-api'
+          metrics_path: /metrics
           static_configs:
             - targets: ['courses-api:80']
+
   loki_config:
     content: |
       auth_enabled: false
@@ -115,6 +176,7 @@ configs:
       limits_config:
         reject_old_samples: true
         reject_old_samples_max_age: 168h
+
   tempo_config:
     content: |
       stream_over_http_enabled: true
@@ -150,5 +212,3 @@ configs:
             path: /tmp/tempo/wal
           local:
             path: /tmp/tempo/blocks
-
-    
