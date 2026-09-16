@@ -1,0 +1,23 @@
+name: Deploy infra stack
+
+on:
+  push:
+    branches: [ci-cd/deploy]
+    paths:
+      - "docker-compose-infra.yaml"
+      - ".github/workflows/deploy-infra.yml"
+
+jobs:
+  redeploy:
+    runs-on: self-hosted
+    steps:
+      - name: Trigger Portainer infra webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.PORTAINER_INFRA_WEBHOOK }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "PORTAINER_INFRA_WEBHOOK secret is not set"
+            exit 1
+          fi
+          curl --fail --show-error --silent -k -X POST "$WEBHOOK_URL"
+          echo "Infra stack webhook triggered"
