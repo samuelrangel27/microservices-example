@@ -2,10 +2,11 @@ services:
   courses-api:
     image: ghcr.io/samuelrangel27/mse-courses-api
     environment:
-      - ASPNETCORE_ENVIRONMENT=QA
-      - ASPNETCORE_URLS=http://+:80
-      - ConnectionStrings__Redis-Cache=redis_cache:6379
-      - ConnectionStrings__Courses="Server=sqlserver,1433;Database=SchoolCourses;User Id=SA;Password=Test1234$;TrustServerCertificate=True;"
+      ASPNETCORE_ENVIRONMENT: QA
+      ASPNETCORE_URLS: http://+:80
+      ConnectionStrings__Redis-Cache: redis_cache:6379
+      # $$ → literal $ after Compose interpolation
+      ConnectionStrings__Courses: "Server=sqlserver,1433;Database=SchoolCourses;User Id=SA;Password=Test1234$$;TrustServerCertificate=True;"
     ports:
       - 5782:80
     networks:
